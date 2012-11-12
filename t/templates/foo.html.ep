@@ -1,2 +1,2 @@
-foo.html.ep <%= $p %>
+foo.html.ep
 

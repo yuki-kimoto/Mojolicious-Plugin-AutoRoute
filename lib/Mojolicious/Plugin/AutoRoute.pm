@@ -1,55 +1,35 @@
 package Mojolicious::Plugin::AutoRoute;
 use Mojo::Base 'Mojolicious::Plugin';
-use File::Find 'find';
 use File::Spec::Functions 'splitdir';
-use Mojo::Util 'camelize';
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub register {
   my ($self, $app, $conf) = @_;
   
-  # Route
+  # Parent route
   my $r = $conf->{route} || $app->routes;
   
-  # Template paths
-  my $paths = $app->renderer->paths;
+  # Max depth
+  my $max_depth = $conf->{max_depth} || 15;
   
-  # Ignore directory
-  my $ignore = $conf->{ignore};
+  # Route(root)
+  $r->route('/')->name('index');
   
-  # Parse directory
-  my $exists = {};
-  for my $path (@$paths) {
-    find(sub {
-      my $file_abs = $File::Find::name;
-      my $file = $file_abs;
-      $file =~ s/^$path//;
-      
-      return unless $file =~ s/\.html\.ep$//;
-      return if $exists->{$file}++;
-      
-      my @dirs = splitdir $file;
-      shift @dirs if @dirs && $dirs[0] eq '';
-      my $base = pop @dirs;
-      
-      return if @dirs && grep { $dirs[0] eq $_ } @$ignore; 
-      
-      # Index page
-      if (!@dirs && $base eq 'index') {
-        $r->any('/')->to('index#main', template => '/index');
+  # Routes
+  my $path_long = '';
+  for (my $depth = 0; $depth < $max_depth; $depth++) {
+    my $path = $path_long . "/:path$depth";
+    my $current_depth = $depth;
+    $r->route("$path")->to(cb => sub {
+      my $c = shift;
+      my $tmpl_path = '';
+      for(my $k = 0; $k < $current_depth + 1; $k++) {
+        $tmpl_path .= '/' . $c->stash("path$k");
       }
-      # Top directory
-      elsif(!@dirs) {
-        $r->any("/$base")->to("index#$base", template => "/$base");
-      }
-      # More depth directry
-      else {
-        my $controller = join '-', @dirs;
-        my $path = '/' . join('/', @dirs) . '/' . $base;
-        $r->any($path)->to("$controller#$base", template => $path);
-      }
-    }, $path);
+      $c->render($tmpl_path);
+    });
+    $path_long = $path;
   }
 }
 
@@ -59,6 +39,10 @@ __END__
 =head1 NAME
 
 Mojolicious::Plugin::AutoRoute - Mojolicious Plugin to create routes from templates
+
+=head1 CAUTION
+
+B<This is beta release. implementation will be changed without warnings>. 
 
 =head1 SYNOPSIS
 
@@ -74,18 +58,15 @@ Mojolicious::Plugin::AutoRoute - Mojolicious Plugin to create routes from templa
 =head1 DESCRIPTION
 
 L<Mojolicious::Plugin::AutoRoute> is a L<Mojolicious> plugin
-to create routes automatically from templates.
+to create routes automatically.
 
-Routes is autocatically create searching C<templates>($app->renderer->paths)
- directory.
+Routes corresponding to URL is created .
 
-For example, if you set template, routes is automatically created.
-  
-  TEMPLATES                      ROUTES          CONTROLLER/ACTION
-  templates/index.html.ep        # /             (Index::main)
-           /foo.html.ep          # /foo          (Index::foo)
-           /foo/bar.html.ep      # /foo/bar      (Foo::Bar)
-           /foo/bar/baz.html.ep  # /foo/bar/baz  (Foo::Bar::baz)
+  TEMPLATES                      ROUTES
+  templates/index.html.ep        # /
+           /foo.html.ep          # /foo
+           /foo/bar.html.ep      # /foo/bar
+           /foo/bar/baz.html.ep  # /foo/bar/baz
 
 If you like C<PHP>, this plugin is very good.
 
@@ -93,15 +74,17 @@ If you like C<PHP>, this plugin is very good.
 
 =head2 C<route>
 
-  route => $app->routes->under(sub { ... });
+  route => $route;
 
-You can set your route, defaults to C<$app->routes>.
+You can set parent route if you need.
+This is L<Mojolicious::Routes> object.
+Default is C<$app->routes>.
 
-=head2 C<ignore>
+=head2 C<max_depth>
 
-  ignore => [qw/layouts include/]
+  max_depth => 40;
 
-Ignored directory.
+Template directory max depth. Default is C<15>.
 
 =head1 METHODS
 

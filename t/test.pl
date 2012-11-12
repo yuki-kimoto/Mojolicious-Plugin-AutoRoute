@@ -7,9 +7,7 @@ use File::Basename 'dirname';
 use lib catdir(dirname(__FILE__), '../lib');
 use lib catdir(dirname(__FILE__), '/lib');
 
-app->routes->namespace('RouteTest');
-
-plugin 'AutoRoute', {ignore => [qw/layouts include/]};
+plugin 'AutoRoute';
 
 app->start;
 
