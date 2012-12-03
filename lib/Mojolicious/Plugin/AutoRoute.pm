@@ -73,7 +73,7 @@ B<This is beta release. Implementation will be changed without warnings>.
   plugin 'AutoRoute';
 
   # Your route
-  $self->puglin('AutoRoute', {route => $self->routes});
+  $self->plugin('AutoRoute', {route => $self->routes});
   
 =head1 DESCRIPTION
 
