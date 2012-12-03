@@ -21,9 +21,9 @@ sub register {
     
     my $tmpl_path = '/index';
     my $stash = $c->stash;
-    $c->stash(template => $tmpl_path);
+    $stash->{template} = $tmpl_path;
       
-    if (-f $c->app->renderer->template_path($stash)) {
+    if (-f $c->app->renderer->template_path($stash) || '') {
         $c->render($tmpl_path)
     }
     else { $c->render_not_found }
@@ -42,9 +42,9 @@ sub register {
       }
       
       my $stash = $c->stash;
-      $c->stash(template => $tmpl_path);
+      $stash->{template} = $tmpl_path;
       
-      if (-f $c->app->renderer->template_path($stash)) {
+      if (-f $c->app->renderer->template_path($stash) || '') {
         $c->render($tmpl_path)
       }
       else { $c->render_not_found }
