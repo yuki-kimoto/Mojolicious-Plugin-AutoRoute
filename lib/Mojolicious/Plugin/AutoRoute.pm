@@ -1,11 +1,13 @@
 package Mojolicious::Plugin::AutoRoute;
 use Mojo::Base 'Mojolicious::Plugin';
-use File::Spec::Functions 'splitdir';
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub register {
   my ($self, $app, $conf) = @_;
+  
+  # Renderer
+  my $renderer = $app->renderer;
   
   # Parent route
   my $r = $conf->{route} || $app->routes;
@@ -14,20 +16,38 @@ sub register {
   my $max_depth = $conf->{max_depth} || 15;
   
   # Route(root)
-  $r->route('/')->name('index');
+  $r->route('/')->to(format => 'html', handler => 'ep', cb => sub {
+    my $c = shift;
+    
+    my $tmpl_path = '/index';
+    my $stash = $c->stash;
+    $c->stash(template => $tmpl_path);
+      
+    if (-f $c->app->renderer->template_path($stash)) {
+        $c->render($tmpl_path)
+    }
+    else { $c->render_not_found }
+  });
   
   # Routes
   my $path_long = '';
   for (my $depth = 0; $depth < $max_depth; $depth++) {
     my $path = $path_long . "/:path$depth";
     my $current_depth = $depth;
-    $r->route("$path")->to(cb => sub {
+    $r->route("$path")->to(format => 'html', handler => 'ep', cb => sub {
       my $c = shift;
       my $tmpl_path = '';
       for(my $k = 0; $k < $current_depth + 1; $k++) {
         $tmpl_path .= '/' . $c->stash("path$k");
       }
-      $c->render($tmpl_path);
+      
+      my $stash = $c->stash;
+      $c->stash(template => $tmpl_path);
+      
+      if (-f $c->app->renderer->template_path($stash)) {
+        $c->render($tmpl_path)
+      }
+      else { $c->render_not_found }
     });
     $path_long = $path;
   }
@@ -38,11 +58,11 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Plugin::AutoRoute - Mojolicious Plugin to create routes from templates
+Mojolicious::Plugin::AutoRoute - Mojolicious Plugin to create routes automatically
 
 =head1 CAUTION
 
-B<This is beta release. implementation will be changed without warnings>. 
+B<This is beta release. Implementation will be changed without warnings>. 
 
 =head1 SYNOPSIS
 
@@ -69,6 +89,32 @@ Routes corresponding to URL is created .
            /foo/bar/baz.html.ep  # /foo/bar/baz
 
 If you like C<PHP>, this plugin is very good.
+
+By default, Mojolicious template is cached.
+If you want not to cache template,
+you clear cache before dispaching.
+
+  # Mojolicious::Lite
+  use Mojo::Cache;
+  app->hook(before_dispatch => sub {
+    my $c = shift;
+    
+    # Clear cache
+    $c->app->renderer->cache(Mojo::Cache->new);
+  });
+
+  # Mojolicious
+  use Mojo::Cache;
+  sub startup {
+    my $self = shift;
+    
+    $self->hook(before_dispatch => sub {
+      my $c = shift;
+      
+      # Clear cache
+      $c->app->renderer->cache(Mojo::Cache->new);
+    });
+  }
 
 =head1 OPTIONS
 
