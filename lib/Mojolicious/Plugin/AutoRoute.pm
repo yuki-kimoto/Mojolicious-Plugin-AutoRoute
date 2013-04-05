@@ -1,7 +1,7 @@
 package Mojolicious::Plugin::AutoRoute;
 use Mojo::Base 'Mojolicious::Plugin';
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 sub register {
   my ($self, $app, $conf) = @_;
@@ -12,49 +12,29 @@ sub register {
   # Parent route
   my $r = $conf->{route} || $app->routes;
   
-  # Max depth
-  my $max_depth = $conf->{max_depth} || 15;
+  # Top directory
+  my $top_dir = $conf->{top_dir} || 'auto';
   
-  # Route(root)
-  $r->route('/')->to(format => 'html', handler => 'ep', cb => sub {
+  # Index
+  $r->route('/')->to(cb => sub { shift->render('/auto/index') });
+  
+  # Route
+  $r->route('/(*anything_path)')->to(cb => sub {
     my $c = shift;
     
-    my $tmpl_path = '/index';
-    my $stash = $c->stash;
-    $stash->{template} = $tmpl_path;
-      
-    if (-f $c->app->renderer->template_path($stash) || '') {
-        $c->render($tmpl_path)
+    my $path = $c->stash('anything_path');
+    $path = 'index' unless defined $path;
+    
+    if ($path =~ /\.\./) {
+      $c->render_exception('Invalid URL');
+      return;
     }
-    else { $c->render_not_found }
+    
+    $c->render("/$top_dir/$path");
   });
-  
-  # Routes
-  my $path_long = '';
-  for (my $depth = 0; $depth < $max_depth; $depth++) {
-    my $path = $path_long . "/:path$depth";
-    my $current_depth = $depth;
-    $r->route("$path")->to(format => 'html', handler => 'ep', cb => sub {
-      my $c = shift;
-      my $tmpl_path = '';
-      for(my $k = 0; $k < $current_depth + 1; $k++) {
-        $tmpl_path .= '/' . $c->stash("path$k");
-      }
-      
-      my $stash = $c->stash;
-      $stash->{template} = $tmpl_path;
-      
-      if (-f $c->app->renderer->template_path($stash) || '') {
-        $c->render($tmpl_path)
-      }
-      else { $c->render_not_found }
-    });
-    $path_long = $path;
-  }
 }
 
 1;
-__END__
 
 =head1 NAME
 
@@ -72,9 +52,6 @@ B<This is beta release. Implementation will be changed without warnings>.
   # Mojolicious::Lite
   plugin 'AutoRoute';
 
-  # Your route
-  $self->plugin('AutoRoute', {route => $self->routes});
-  
 =head1 DESCRIPTION
 
 L<Mojolicious::Plugin::AutoRoute> is a L<Mojolicious> plugin
@@ -82,39 +59,14 @@ to create routes automatically.
 
 Routes corresponding to URL is created .
 
-  TEMPLATES                      ROUTES
-  templates/index.html.ep        # /
-           /foo.html.ep          # /foo
-           /foo/bar.html.ep      # /foo/bar
-           /foo/bar/baz.html.ep  # /foo/bar/baz
+  TEMPLATES                           ROUTES
+  templates/auto/index.html.ep        # /
+                /foo.html.ep          # /foo
+                /foo/bar.html.ep      # /foo/bar
+                /foo/bar/baz.html.ep  # /foo/bar/baz
 
 If you like C<PHP>, this plugin is very good.
-
-By default, Mojolicious template is cached.
-If you want not to cache template,
-you clear cache before dispaching.
-
-  # Mojolicious::Lite
-  use Mojo::Cache;
-  app->hook(before_dispatch => sub {
-    my $c = shift;
-    
-    # Clear cache
-    $c->app->renderer->cache(Mojo::Cache->new);
-  });
-
-  # Mojolicious
-  use Mojo::Cache;
-  sub startup {
-    my $self = shift;
-    
-    $self->hook(before_dispatch => sub {
-      my $c = shift;
-      
-      # Clear cache
-      $c->app->renderer->cache(Mojo::Cache->new);
-    });
-  }
+You only put file into C<auto> directory.
 
 =head1 OPTIONS
 
@@ -126,11 +78,11 @@ You can set parent route if you need.
 This is L<Mojolicious::Routes> object.
 Default is C<$app->routes>.
 
-=head2 C<max_depth>
+=head2 C<top_dir>
 
-  max_depth => 40;
+  top_dir => 'myauto'
 
-Template directory max depth. Default is C<15>.
+Top directory. default is C<auto>.
 
 =head1 METHODS
 

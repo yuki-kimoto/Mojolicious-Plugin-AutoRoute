@@ -1,6 +1,8 @@
-0.03 2012-12-3
-  (beta release) detect not found page.
-0.02 2012-11-12
-  (beta release) Simplified route logic, not backword compatible.
-0.01
-  (beta release) First beta release.
+0.04
+  - much simplify logic.
+0.03 (beta release)
+  - detect not found page.
+0.02 (beta release)
+  - simplified route logic, not backword compatible.
+0.01 (beta release)
+  - first beta release.
