@@ -71,16 +71,32 @@ use Test::Mojo;
   $t->get_ok('/foo')->content_like(qr#myauto/foo\.html\.ep#);
 }
 
-# top_dir option deep directory
+# top_dir option deep directory(and option is hash reference)
 {
   package Test4;
   use Mojolicious::Lite;
 
-  plugin 'AutoRoute', top_dir => 'myauto/myauto';
+  plugin 'AutoRoute', {top_dir => 'myauto/myauto'};
   
   my $app = Test4->new;
   my $t = Test::Mojo->new($app);
 
   # User created route
   $t->get_ok('/foo')->content_like(qr#myauto/myauto/foo\.html\.ep#);
+}
+
+# Route which has path
+{
+  package Test5;
+  use Mojolicious::Lite;
+  
+  my $r = any('/some');
+
+  plugin 'AutoRoute', route => $r, top_dir => 'myauto';
+  
+  my $app = Test5->new;
+  my $t = Test::Mojo->new($app);
+  
+  # User created route
+  $t->get_ok('/some/foo')->content_like(qr#myauto/foo\.html\.ep#);
 }
