@@ -68,6 +68,7 @@ use Test::Mojo;
   my $t = Test::Mojo->new($app);
 
   # User created route
+  $t->get_ok('/')->content_like(qr#myauto/index\.html\.ep#);
   $t->get_ok('/foo')->content_like(qr#myauto/foo\.html\.ep#);
 }
 

@@ -1,7 +1,7 @@
 package Mojolicious::Plugin::AutoRoute;
 use Mojo::Base 'Mojolicious::Plugin';
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 sub register {
   my ($self, $app, $conf) = @_;
@@ -14,9 +14,11 @@ sub register {
   
   # Top directory
   my $top_dir = $conf->{top_dir} || 'auto';
+  $top_dir =~ s#^/##;
+  $top_dir =~ s#/$##;
   
   # Index
-  $r->route('/')->to(cb => sub { shift->render('/auto/index') });
+  $r->route('/')->to(cb => sub { shift->render("/$top_dir/index") });
   
   # Route
   $r->route('/(*anything_path)')->to(cb => sub {
@@ -38,8 +40,6 @@ sub register {
       }
     }
     
-    $top_dir =~ s#^/##;
-    $top_dir =~ s#/$##;
     if ($found) { $c->render("/$top_dir/$path") }
     else { $c->render_not_found }
   });

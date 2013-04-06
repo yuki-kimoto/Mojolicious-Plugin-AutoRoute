@@ -1,5 +1,8 @@
+0.06 (beta release)
+  - fixed top_dir option bug
 0.05 (beta release)
   - added Not found logic
+  - added top_dir option
 0.04 (beta release)
   - much simplify logic.
 0.03 (beta release)
