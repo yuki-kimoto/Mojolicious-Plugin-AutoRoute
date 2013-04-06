@@ -70,3 +70,17 @@ use Test::Mojo;
   # User created route
   $t->get_ok('/foo')->content_like(qr#myauto/foo\.html\.ep#);
 }
+
+# top_dir option deep directory
+{
+  package Test4;
+  use Mojolicious::Lite;
+
+  plugin 'AutoRoute', top_dir => 'myauto/myauto';
+  
+  my $app = Test4->new;
+  my $t = Test::Mojo->new($app);
+
+  # User created route
+  $t->get_ok('/foo')->content_like(qr#myauto/myauto/foo\.html\.ep#);
+}
