@@ -38,6 +38,8 @@ sub register {
       }
     }
     
+    $top_dir =~ s#^/##;
+    $top_dir =~ s#/$##;
     if ($found) { $c->render("/$top_dir/$path") }
     else { $c->render_not_found }
   });
