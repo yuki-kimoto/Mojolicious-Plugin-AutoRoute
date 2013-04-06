@@ -1,7 +1,7 @@
 package Mojolicious::Plugin::AutoRoute;
 use Mojo::Base 'Mojolicious::Plugin';
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 sub register {
   my ($self, $app, $conf) = @_;
@@ -26,11 +26,20 @@ sub register {
     $path = 'index' unless defined $path;
     
     if ($path =~ /\.\./) {
-      $c->render_exception('Invalid URL');
+      $c->render_exception('Forbidden');
       return;
     }
     
-    $c->render("/$top_dir/$path");
+    my $found;
+    for my $dir (@{$app->renderer->paths}) {
+      if (-f "$dir/$top_dir/$path.html.ep") {
+        $found = 1;
+        last;
+      }
+    }
+    
+    if ($found) { $c->render("/$top_dir/$path") }
+    else { $c->render_not_found }
   });
 }
 

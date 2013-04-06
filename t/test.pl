@@ -7,6 +7,8 @@ use File::Basename 'dirname';
 use lib catdir(dirname(__FILE__), '../lib');
 use lib catdir(dirname(__FILE__), '/lib');
 
+push @{app->renderer->paths}, app->home->rel_file('templates2');
+
 plugin 'AutoRoute';
 
   use Mojo::Cache;
