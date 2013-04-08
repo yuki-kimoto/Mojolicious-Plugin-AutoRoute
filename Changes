@@ -1,3 +1,5 @@
+0.07 (beta release)
+  - route create by AutoRoute plugin don't overwrite user defined route.
 0.06 (beta release)
   - fixed top_dir option bug
 0.05 (beta release)

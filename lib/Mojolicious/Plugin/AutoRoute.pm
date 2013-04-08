@@ -1,13 +1,10 @@
 package Mojolicious::Plugin::AutoRoute;
 use Mojo::Base 'Mojolicious::Plugin';
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 sub register {
   my ($self, $app, $conf) = @_;
-  
-  # Renderer
-  my $renderer = $app->renderer;
   
   # Parent route
   my $r = $conf->{route} || $app->routes;
@@ -17,32 +14,40 @@ sub register {
   $top_dir =~ s#^/##;
   $top_dir =~ s#/$##;
   
-  # Index
-  $r->route('/')->to(cb => sub { shift->render("/$top_dir/index") });
-  
-  # Route
-  $r->route('/(*anything_path)')->to(cb => sub {
-    my $c = shift;
+  # Condition
+  $app->routes->add_condition(__auto_route_plugin_file_exists => sub {
+    my ($r, $c, $captures, $pattern) = @_;
     
-    my $path = $c->stash('anything_path');
+    my $path = $captures->{__auto_route_plugin_path};
     $path = 'index' unless defined $path;
     
-    if ($path =~ /\.\./) {
-      $c->render_exception('Forbidden');
-      return;
-    }
+    return if $path =~ /\.\./;
     
     my $found;
-    for my $dir (@{$app->renderer->paths}) {
+    for my $dir (@{$c->app->renderer->paths}) {
       if (-f "$dir/$top_dir/$path.html.ep") {
-        $found = 1;
-        last;
+        return 1;
       }
     }
     
-    if ($found) { $c->render("/$top_dir/$path") }
-    else { $c->render_not_found }
+    return;
   });
+  
+  # Index
+  $r->route('/')
+    ->over('__auto_route_plugin_file_exists')
+    ->to(cb => sub { shift->render("/$top_dir/index") });
+  
+  # Route
+  $r->route('/(*__auto_route_plugin_path)')
+    ->over('__auto_route_plugin_file_exists')
+    ->to(cb => sub {
+      my $c = shift;
+      
+      my $path = $c->stash('__auto_route_plugin_path');
+      
+      $c->render("/$top_dir/$path");
+    });
 }
 
 1;
