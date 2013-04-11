@@ -141,3 +141,39 @@ use Test::Mojo;
   # Forbidden(protect from directory traversal);
   $t->get_ok('/foo/../foo')->status_is('404');
 }
+
+# top_dir option (two differenct route)
+{
+  package Test6;
+  use Mojolicious::Lite;
+
+  plugin 'AutoRoute';
+  my $r = app->routes->route("/prefix");
+  plugin 'AutoRoute', top_dir => 'myauto', route => $r;
+  
+  my $app = Test6->new;
+  my $t = Test::Mojo->new($app);
+
+  $t->get_ok('/')->content_like(qr#index\.html\.ep#);
+  $t->get_ok('/foo')->content_like(qr#foo\.html\.ep#);
+  $t->get_ok('/prefix')->content_like(qr#myauto/index\.html\.ep#);
+  $t->get_ok('/prefix/foo')->content_like(qr#myauto/foo\.html\.ep#);
+}
+
+# top_dir option (two differenct route, first has route, second is normal)
+{
+  package Test6;
+  use Mojolicious::Lite;
+
+  my $r = app->routes->route("/prefix");
+  plugin 'AutoRoute', top_dir => 'myauto', route => $r;
+  plugin 'AutoRoute';
+  
+  my $app = Test6->new;
+  my $t = Test::Mojo->new($app);
+
+  $t->get_ok('/')->content_like(qr#index\.html\.ep#);
+  $t->get_ok('/foo')->content_like(qr#foo\.html\.ep#);
+  $t->get_ok('/prefix')->content_like(qr#myauto/index\.html\.ep#);
+  $t->get_ok('/prefix/foo')->content_like(qr#myauto/foo\.html\.ep#);
+}
