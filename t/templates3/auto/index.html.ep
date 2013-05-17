@@ -1,0 +1,7 @@
+<%
+  $self->render(data => 'a');
+  $self->finish_rendering;
+  return;
+%>
+
+1;

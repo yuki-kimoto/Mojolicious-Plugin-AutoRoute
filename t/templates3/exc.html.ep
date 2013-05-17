@@ -1,0 +1,7 @@
+<%
+  $self->render_exception('Internal Error');
+  $self->finish_renderng;
+  return;
+%>
+
+1;
