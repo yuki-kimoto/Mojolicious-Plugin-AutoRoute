@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Test::Mojo;
 
-# Basic test
+note 'Basic test';
 {
   package Test1;
   use Mojolicious::Lite;
@@ -43,7 +43,7 @@ use Test::Mojo;
   $t->get_ok('/foo/../foo')->status_is('404');
 }
 
-# top_dir option
+note 'top_dir option';
 {
   package Test2;
   use Mojolicious::Lite;
@@ -57,7 +57,7 @@ use Test::Mojo;
   $t->get_ok('/foo')->content_like(qr#myauto/foo\.html\.ep#);
 }
 
-# top_dir option with slash
+note 'top_dir option with slash';
 {
   package Test3;
   use Mojolicious::Lite;
@@ -72,7 +72,7 @@ use Test::Mojo;
   $t->get_ok('/foo')->content_like(qr#myauto/foo\.html\.ep#);
 }
 
-# top_dir option deep directory(and option is hash reference)
+note 'top_dir option deep directory(and option is hash reference)';
 {
   package Test4;
   use Mojolicious::Lite;
@@ -86,7 +86,7 @@ use Test::Mojo;
   $t->get_ok('/foo')->content_like(qr#myauto/myauto/foo\.html\.ep#);
 }
 
-# Route which has path
+note 'Route which has path';
 {
   package Test5;
   use Mojolicious::Lite;
@@ -102,7 +102,7 @@ use Test::Mojo;
   $t->get_ok('/some/foo')->content_like(qr#myauto/foo\.html\.ep#);
 }
 
-# AutoRoute write before normal route
+note 'AutoRoute write before normal route';
 {
   package Test1;
   use Mojolicious::Lite;
@@ -142,7 +142,7 @@ use Test::Mojo;
   $t->get_ok('/foo/../foo')->status_is('404');
 }
 
-# top_dir option (two differenct route)
+note 'top_dir option (two differenct route)';
 {
   package Test6;
   use Mojolicious::Lite;
@@ -160,7 +160,7 @@ use Test::Mojo;
   $t->get_ok('/prefix/foo')->content_like(qr#myauto/foo\.html\.ep#);
 }
 
-# top_dir option (two differenct route, first has route, second is normal)
+note 'top_dir option (two differenct route, first has route, second is normal)';
 {
   package Test6;
   use Mojolicious::Lite;
@@ -178,7 +178,7 @@ use Test::Mojo;
   $t->get_ok('/prefix/foo')->content_like(qr#myauto/foo\.html\.ep#);
 }
 
-# finish_rendering
+note 'finish_rendering';
 {
   package Test7;
   use Mojolicious::Lite;
@@ -191,8 +191,26 @@ use Test::Mojo;
 
   $t->get_ok('/')->status_is(200)->content_is('a');
   $t->get_ok('/json')->status_is(200);
-  $DB::single = 1;
   $t->json_is('/foo' => 1);
   $t->get_ok('/not')->status_is(404);
   $t->get_ok('/exc')->status_is(500);
 }
+
+note 'template function';
+{
+  package Test8;
+  use Mojolicious::Lite;
+  use Mojolicious::Plugin::AutoRoute::Util 'template';
+  
+  plugin 'AutoRoute';
+  
+  get '/create/:id' => template '/create';
+  get '/json/:id' => template '/json';
+  
+  my $app = Test8->new;
+  my $t = Test::Mojo->new($app);
+
+  $t->get_ok('/create/10')->content_like(qr/create 10/);
+  $t->get_ok('/json/10')->json_is('/foo' => 10);
+}
+
