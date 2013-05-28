@@ -41,6 +41,10 @@ note 'Basic test';
 
   # Forbidden(protect from directory traversal);
   $t->get_ok('/foo/../foo')->status_is('404');
+  
+  # Last slash
+  $t->get_ok('/foo/')->content_like(qr#\Qfoo.html.ep#);
+  $t->get_ok('/foo//')->content_like(qr#\Qfoo.html.ep#);
 }
 
 note 'top_dir option';

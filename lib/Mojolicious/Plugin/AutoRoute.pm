@@ -1,7 +1,7 @@
 package Mojolicious::Plugin::AutoRoute;
 use Mojo::Base 'Mojolicious::Plugin';
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 sub register {
   my ($self, $app, $conf) = @_;
@@ -25,6 +25,8 @@ sub register {
     
     return if $path =~ /\.\./;
     
+    $path =~ s/\/+$//;
+    
     my $found;
     for my $dir (@{$c->app->renderer->paths}) {
       if (-f "$dir/$top_dir/$path.html.ep") {
@@ -47,6 +49,7 @@ sub register {
       my $c = shift;
       
       my $path = $c->stash('__auto_route_plugin_path');
+      $path =~ s/\/+$//;
       
       $c->render("/$top_dir/$path", 'mojo.maybe' => 1);
     });
