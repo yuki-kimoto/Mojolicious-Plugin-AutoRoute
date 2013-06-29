@@ -1,5 +1,4 @@
 <%
   $self->render_not_found;
-  $self->finish_rendering;
   return;
 %>

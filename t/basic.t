@@ -208,8 +208,8 @@ note 'template function';
   
   plugin 'AutoRoute';
   
-  get '/create/:id' => template '/create';
-  get '/json/:id' => template '/json';
+  get '/create/:id' => template 'create';
+  get '/json/:id' => template 'json';
   
   my $app = Test8->new;
   my $t = Test::Mojo->new($app);
