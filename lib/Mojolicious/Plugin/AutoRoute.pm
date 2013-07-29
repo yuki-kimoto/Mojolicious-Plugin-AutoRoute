@@ -1,7 +1,7 @@
 package Mojolicious::Plugin::AutoRoute;
 use Mojo::Base 'Mojolicious::Plugin';
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 sub register {
   my ($self, $app, $conf) = @_;
@@ -71,10 +71,6 @@ sub register {
 
 Mojolicious::Plugin::AutoRoute - Mojolicious Plugin to create routes automatically
 
-=head1 CAUTION
-
-B<This is beta release and very experimental. Implementation will be changed without warnings>.
-
 =head1 SYNOPSIS
 
   # Mojolicious
@@ -102,6 +98,7 @@ You only put file into C<auto> directory.
 =head1 EXAMPLE
 
   use Mojolicious::Lite;
+  use Mojolicious::Plugin::AutoRoute::Util 'template';
   
   # AutoRoute
   plugin 'AutoRoute';
@@ -167,6 +164,12 @@ C<template> is return callback to call C<render_maybe>.
   $plugin->register($app);
 
 Register plugin in L<Mojolicious> application.
+
+=head1 CAUTION
+
+This plugin depend on Mojolicious internal structure.
+I try to keep this module work well and  backword compatible,
+but I don't guarantee it.
 
 =head1 SEE ALSO
 
