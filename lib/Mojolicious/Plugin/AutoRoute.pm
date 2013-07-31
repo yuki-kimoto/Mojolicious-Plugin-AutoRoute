@@ -1,7 +1,7 @@
 package Mojolicious::Plugin::AutoRoute;
 use Mojo::Base 'Mojolicious::Plugin';
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 sub register {
   my ($self, $app, $conf) = @_;
@@ -79,6 +79,9 @@ Mojolicious::Plugin::AutoRoute - Mojolicious Plugin to create routes automatical
   # Mojolicious::Lite
   plugin 'AutoRoute';
 
+  # With option
+  plugin 'AutoRoute', route => $r;
+
 =head1 DESCRIPTION
 
 L<Mojolicious::Plugin::AutoRoute> is a L<Mojolicious> plugin
@@ -152,12 +155,14 @@ If you want to create custom route, use C<template> function.
   use Mojolicious::Plugin::AutoRoute::Util 'template';
   
   # Mojolicious Lite
-  any '/foo' => template 'foo';
+  any '/foo' => template '/foo';
 
   # Mojolicious
-  $r->any('/foo' => template 'foo');
+  $r->any('/foo' => template '/foo');
 
 C<template> is return callback to call C<render_maybe>.
+
+=head1 METHOD
 
 =head2 register
 

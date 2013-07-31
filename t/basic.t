@@ -25,7 +25,9 @@ note 'Basic test';
   # Get
   $t->get_ok('/')->content_like(qr#\Qindex.html.ep#);
   $t->get_ok('/foo')->content_like(qr#\Qfoo.html.ep#);
+  $t->get_ok('/foo/')->content_like(qr#\Qfoo.html.ep#);
   $t->get_ok('/foo/bar')->content_like(qr#\Qfoo/bar.html.ep#);
+  $t->get_ok('/foo/bar/')->content_like(qr#\Qfoo/bar.html.ep#);
   $t->get_ok('/foo/bar/baz')->content_like(qr#\Qfoo/bar/baz.html.ep#);
   $t->get_ok('/foo2')->content_like(qr#\Qfoo2.html.ep#);
 
@@ -210,11 +212,13 @@ note 'template function';
   
   get '/create/:id' => template 'create';
   get '/json/:id' => template 'json';
+  get '/create2/:id' => template '/create';
   
   my $app = Test8->new;
   my $t = Test::Mojo->new($app);
 
   $t->get_ok('/create/10')->content_like(qr/create 10/);
   $t->get_ok('/json/10')->json_is('/foo' => 10);
+  $t->get_ok('/create2/10')->content_like(qr/create 10/);
 }
 
