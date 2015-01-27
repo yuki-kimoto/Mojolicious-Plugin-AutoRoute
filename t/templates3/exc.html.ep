@@ -1,6 +1,0 @@
-<%
-  $self->render_exception('Internal Error');
-  return;
-%>
-
-1;

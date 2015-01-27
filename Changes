@@ -1,3 +1,6 @@
+0.15
+  - removed deprecated finish_rendering helper
+  - catch up Mojolicious 5.73(deprecated render_not_found, render_exception)
 0.14
   - improve pod and test
 0.13

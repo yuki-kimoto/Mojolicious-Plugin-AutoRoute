@@ -193,6 +193,7 @@ note 'finish_rendering';
   plugin 'AutoRoute';
   
   my $app = Test7->new;
+  
   my $t = Test::Mojo->new($app);
 
   $t->get_ok('/')->status_is(200)->content_is('a');

@@ -1,7 +1,7 @@
 package Mojolicious::Plugin::AutoRoute;
 use Mojo::Base 'Mojolicious::Plugin';
 
-our $VERSION = '0.14';
+our $VERSION = '0.15';
 
 sub register {
   my ($self, $app, $conf) = @_;
@@ -41,9 +41,8 @@ sub register {
   $r->route('/')
     ->over($condition_name)
     ->to(cb => sub {
-      my $self = shift;
-      $self->render("/$top_dir/index", 'mojo.maybe' => 1);
-      $self->stash('mojo.finished') ? undef : $self->render_not_found;
+      my $c = shift;
+      $c->render("/$top_dir/index", 'mojo.maybe' => 1);
     });
   
   # Route
@@ -56,13 +55,7 @@ sub register {
       $path =~ s/\/+$//;
       
       $c->render("/$top_dir/$path", 'mojo.maybe' => 1);
-      $c->stash('mojo.finished') ? undef : $c->render_not_found;
     });
-  
-  # Finish rendering Helper
-  $app->helper(finish_rendering => sub {
-    warn "finish_rendering is DEPRECATED. no more needed";
-  });
 }
 
 1;
