@@ -1,7 +1,7 @@
 package Mojolicious::Plugin::AutoRoute;
 use Mojo::Base 'Mojolicious::Plugin';
 
-our $VERSION = '0.15';
+our $VERSION = '0.16';
 
 sub register {
   my ($self, $app, $conf) = @_;

@@ -12,7 +12,6 @@ sub template {
   return sub {
     my $self = shift;
     $self->render($template, 'mojo.maybe' => 1);
-    $self->stash('mojo.finished') ? undef : $self->render_not_found;
   };
 }
 
