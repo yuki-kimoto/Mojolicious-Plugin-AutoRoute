@@ -1,3 +1,5 @@
+0.17
+  - fix Inactivity timeout bug
 0.16
   - catch up Mojolicious 5.73(deprecated render_not_found, render_exception)
 0.15

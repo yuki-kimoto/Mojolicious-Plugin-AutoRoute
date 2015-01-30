@@ -1,7 +1,7 @@
 package Mojolicious::Plugin::AutoRoute;
 use Mojo::Base 'Mojolicious::Plugin';
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 
 sub register {
   my ($self, $app, $conf) = @_;
@@ -37,12 +37,17 @@ sub register {
     return;
   });
   
+  my $not_found = $Mojolicious::VERSION >= 5.73
+    ? sub { shift->reply->exception }
+    : sub { shift->render_not_found };
+  
   # Index
   $r->route('/')
     ->over($condition_name)
     ->to(cb => sub {
       my $c = shift;
       $c->render("/$top_dir/index", 'mojo.maybe' => 1);
+      $c->stash('mojo.finished') ? undef: $not_found->($c);
     });
   
   # Route
@@ -55,6 +60,7 @@ sub register {
       $path =~ s/\/+$//;
       
       $c->render("/$top_dir/$path", 'mojo.maybe' => 1);
+      $c->stash('mojo.finished') ? undef : $not_found->($c);
     });
 }
 
