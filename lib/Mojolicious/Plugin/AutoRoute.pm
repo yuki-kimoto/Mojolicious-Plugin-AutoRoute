@@ -25,16 +25,18 @@ sub register {
     $template_base_dir =~ s#/$##;
     my $template_dir = "$template_base_dir/$top_dir";
     
-    # Find templates
-    find(sub {
-      my $template_abs = $File::Find::name;
-      my $template = $template_abs;
-      $template =~ s/\Q$template_dir\///;
-      
-      if ($template =~ s/\.html\.ep$//) {
-        push @templates, $template;
-      }
-    }, $template_dir);
+    if (-d $template_dir) {
+      # Find templates
+      find(sub {
+        my $template_abs = $File::Find::name;
+        my $template = $template_abs;
+        $template =~ s/\Q$template_dir\///;
+        
+        if ($template =~ s/\.html\.ep$//) {
+          push @templates, $template;
+        }
+      }, $template_dir);
+    }
   }
   
   my $not_found = $Mojolicious::VERSION >= 5.73
