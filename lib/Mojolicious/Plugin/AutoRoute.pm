@@ -1,7 +1,9 @@
 package Mojolicious::Plugin::AutoRoute;
 use Mojo::Base 'Mojolicious::Plugin';
 
-our $VERSION = '0.17';
+use File::Find 'find';
+
+our $VERSION = '0.18';
 
 sub register {
   my ($self, $app, $conf) = @_;
@@ -9,59 +11,50 @@ sub register {
   # Parent route
   my $r = $conf->{route} || $app->routes;
   
+  # Template Base
+  my $template_base_dirs = $app->renderer->paths;
+  
   # Top directory
   my $top_dir = $conf->{top_dir} || 'auto';
   $top_dir =~ s#^/##;
   $top_dir =~ s#/$##;
   
-  my $condition_name = "__auto_route_plugin_${top_dir}_file_exists";
-  
-  # Condition
-  $app->routes->add_condition($condition_name => sub {
-    my ($r, $c, $captures, $pattern) = @_;
+  # Search templates
+  my @templates;
+  for my $template_base_dir (@$template_base_dirs) {
+    $template_base_dir =~ s#/$##;
+    my $template_dir = "$template_base_dir/$top_dir";
     
-    my $path = $captures->{__auto_route_plugin_path};
-    $path = 'index' unless defined $path;
-    
-    return if $path =~ /\.\./;
-    
-    $path =~ s/\/+$//;
-    
-    my $found;
-    for my $dir (@{$c->app->renderer->paths}) {
-      if (-f "$dir/$top_dir/$path.html.ep") {
-        return 1;
+    # Find templates
+    find(sub {
+      my $template_abs = $File::Find::name;
+      my $template = $template_abs;
+      $template =~ s/\Q$template_dir\///;
+      
+      if ($template =~ s/\.html\.ep$//) {
+        push @templates, $template;
       }
-    }
-    
-    return;
-  });
+    }, $template_dir);
+  }
   
   my $not_found = $Mojolicious::VERSION >= 5.73
     ? sub { shift->reply->exception }
     : sub { shift->render_not_found };
   
-  # Index
-  $r->route('/')
-    ->over($condition_name)
-    ->to(cb => sub {
-      my $c = shift;
-      $c->render("/$top_dir/index", 'mojo.maybe' => 1);
-      $c->stash('mojo.finished') ? undef: $not_found->($c);
-    });
-  
-  # Route
-  $r->route('/(*__auto_route_plugin_path)')
-    ->over($condition_name)
-    ->to(cb => sub {
-      my $c = shift;
-      
-      my $path = $c->stash('__auto_route_plugin_path');
-      $path =~ s/\/+$//;
-      
-      $c->render("/$top_dir/$path", 'mojo.maybe' => 1);
-      $c->stash('mojo.finished') ? undef : $not_found->($c);
-    });
+  # Register routes
+  $DB::single = 1;
+  for my $template (@templates) {
+    my $route_path = $template eq 'index' ? '/' : $template;
+    
+    # Route
+    $r->route("/$route_path")
+      ->to(cb => sub {
+        my $c = shift;
+        
+        $c->render("/$top_dir/$template", 'mojo.maybe' => 1);
+        $c->stash('mojo.finished') ? undef : $not_found->($c);
+      });
+  }
 }
 
 1;
