@@ -3,7 +3,7 @@ use Mojo::Base 'Mojolicious::Plugin';
 
 use File::Find 'find';
 
-our $VERSION = '0.18';
+our $VERSION = '0.19';
 
 sub register {
   my ($self, $app, $conf) = @_;
@@ -44,7 +44,6 @@ sub register {
     : sub { shift->render_not_found };
   
   # Register routes
-  $DB::single = 1;
   for my $template (@templates) {
     my $route_path = $template eq 'index' ? '/' : $template;
     

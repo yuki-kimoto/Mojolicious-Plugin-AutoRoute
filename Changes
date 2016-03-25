@@ -1,3 +1,5 @@
+0.19 (2016-3-25)
+  - remove "DB::single = 1" in source
 0.18
   - improve registration of routes and performance.
 0.17
