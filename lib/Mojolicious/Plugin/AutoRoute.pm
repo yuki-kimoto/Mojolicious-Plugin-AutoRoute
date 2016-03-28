@@ -3,7 +3,7 @@ use Mojo::Base 'Mojolicious::Plugin';
 
 use File::Find 'find';
 
-our $VERSION = '0.19';
+our $VERSION = '0.20';
 
 sub register {
   my ($self, $app, $conf) = @_;
@@ -40,7 +40,7 @@ sub register {
   }
   
   my $not_found = $Mojolicious::VERSION >= 5.73
-    ? sub { shift->reply->exception }
+    ? sub { shift->reply->not_found }
     : sub { shift->render_not_found };
   
   # Register routes

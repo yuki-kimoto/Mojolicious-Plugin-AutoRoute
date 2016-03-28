@@ -10,7 +10,7 @@ sub template {
   my $template = shift;
 
   my $not_found = $Mojolicious::VERSION >= 5.73
-    ? sub { shift->reply->exception }
+    ? sub { shift->reply->not_found }
     : sub { shift->render_not_found };
 
   return sub {

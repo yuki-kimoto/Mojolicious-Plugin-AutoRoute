@@ -1,3 +1,5 @@
+0.20 (2016-3-28)
+  - fix bug that exception return instead of not found
 0.19 (2016-3-25)
   - remove "DB::single = 1" in source
 0.18
