@@ -3,7 +3,7 @@ use Mojo::Base 'Mojolicious::Plugin';
 
 use File::Find 'find';
 
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 
 sub register {
   my ($self, $app, $conf) = @_;
@@ -39,22 +39,13 @@ sub register {
     }
   }
   
-  my $not_found = $Mojolicious::VERSION >= 5.73
-    ? sub { shift->reply->not_found }
-    : sub { shift->render_not_found };
-  
   # Register routes
   for my $template (@templates) {
     my $route_path = $template eq 'index' ? '/' : $template;
     
     # Route
     $r->route("/$route_path")
-      ->to(cb => sub {
-        my $c = shift;
-        
-        $c->render("/$top_dir/$template", 'mojo.maybe' => 1);
-        $c->stash('mojo.finished') ? undef : $not_found->($c);
-      });
+      ->to(cb => sub { shift->render("/$top_dir/$template", 'mojo.maybe' => 1) });
   }
 }
 
@@ -139,21 +130,25 @@ Default is C<$app->routes>.
 
 Top directory. default is C<auto>.
 
-=head1 FUNCTIONS
+=head1 TIPS
 
-=head2 template(Mojolicious::Plugin::AutoRoute::Util)
+If you want to create custom route, use C<render_maybe> method.
 
-If you want to create custom route, use C<template> function.
+  # Mojolicious Lite
+  any '/foo' => sub { shift->render_maybe('/foo') };
+
+  # Mojolicious
+  $r->any('/foo' => sub { shift->render_maybe('/foo') };
+
+For backwrod comaptible, you can use C<template> function.
 
   use Mojolicious::Plugin::AutoRoute::Util 'template';
   
   # Mojolicious Lite
-  any '/foo' => template '/foo';
+  any '/foo' => template '/foo';s
 
   # Mojolicious
   $r->any('/foo' => template '/foo');
-
-C<template> is return callback to call C<render_maybe>.
 
 =head1 METHOD
 
