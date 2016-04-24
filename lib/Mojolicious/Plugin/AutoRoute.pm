@@ -161,7 +161,7 @@ Register plugin in L<Mojolicious> application.
 =head1 CAUTION
 
 This plugin depend on Mojolicious internal structure.
-I try to keep this module work well and  backword compatible,
+I try to keep this module work well and backward compatible,
 but I don't guarantee it.
 
 =head1 SEE ALSO
