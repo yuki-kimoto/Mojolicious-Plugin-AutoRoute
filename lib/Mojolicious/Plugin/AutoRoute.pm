@@ -3,7 +3,7 @@ use Mojo::Base 'Mojolicious::Plugin';
 
 use File::Find 'find';
 
-our $VERSION = '0.21';
+our $VERSION = '0.22';
 
 sub register {
   my ($self, $app, $conf) = @_;
@@ -43,8 +43,17 @@ sub register {
   for my $template (@templates) {
     my $route_path = $template eq 'index' ? '/' : $template;
     
+    # Mojolicious compatibility
+    my $any_method_name;
+    if ($Mojolicious::VERSION >= '8.67') {
+      $any_method_name = 'any'
+    }
+    else {
+      $any_method_name = 'route'
+    }
+    
     # Route
-    $r->route("/$route_path")
+    $r->$any_method_name("/$route_path")
       ->to(cb => sub { shift->render("/$top_dir/$template", 'mojo.maybe' => 1) });
   }
 }
@@ -53,7 +62,7 @@ sub register {
 
 =head1 NAME
 
-Mojolicious::Plugin::AutoRoute - Mojolicious Plugin to create routes automatically
+Mojolicious::Plugin::AutoRoute - Mojolicious plugin to create routes automatically
 
 =head1 SYNOPSIS
 
@@ -71,7 +80,10 @@ Mojolicious::Plugin::AutoRoute - Mojolicious Plugin to create routes automatical
 L<Mojolicious::Plugin::AutoRoute> is a L<Mojolicious> plugin
 to create routes automatically.
 
-Routes corresponding to URL is created .
+If you put templates into C<auto> directory,
+the corresponding routes is created automatically.
+
+For example:
 
   TEMPLATES                           ROUTES
   templates/auto/index.html.ep        # /
@@ -79,19 +91,24 @@ Routes corresponding to URL is created .
                 /foo/bar.html.ep      # /foo/bar
                 /foo/bar/baz.html.ep  # /foo/bar/baz
 
-If you like C<PHP>, this plugin is very good.
-You only put file into C<auto> directory.
+I like PHP simplicity. All thing needed is that you put PHP files into some directory,
+and write program. You don't need to create routes manually.
+
+This plugin gives PHP simplicity to L<Mojolicious>.
 
 =head1 EXAMPLE
 
   use Mojolicious::Lite;
-  use Mojolicious::Plugin::AutoRoute::Util 'template';
   
   # AutoRoute
   plugin 'AutoRoute';
   
   # Custom routes
-  get '/create/:id' => template '/create';
+  get '/create/:id' => sub { shift->render_maybe('/create') };
+  
+  app->start;
+  
+  __DATA__
   
   @@ auto/index.html.ep
   /
@@ -145,7 +162,7 @@ For backwrod comaptible, you can use C<template> function.
   use Mojolicious::Plugin::AutoRoute::Util 'template';
   
   # Mojolicious Lite
-  any '/foo' => template '/foo';s
+  any '/foo' => template '/foo';
 
   # Mojolicious
   $r->any('/foo' => template '/foo');
@@ -157,12 +174,6 @@ For backwrod comaptible, you can use C<template> function.
   $plugin->register($app);
 
 Register plugin in L<Mojolicious> application.
-
-=head1 CAUTION
-
-This plugin depend on Mojolicious internal structure.
-I try to keep this module work well and  backword compatible,
-but I don't guarantee it.
 
 =head1 SEE ALSO
 
