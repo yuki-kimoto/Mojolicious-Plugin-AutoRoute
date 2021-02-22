@@ -3,7 +3,7 @@ use Mojo::Base 'Mojolicious::Plugin';
 
 use File::Find 'find';
 
-our $VERSION = '0.22';
+our $VERSION = '0.23';
 
 sub register {
   my ($self, $app, $conf) = @_;
